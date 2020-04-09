@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">GlobalRelayImageDownloaderProj</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="back">Back</string>
+    <string name="next">Next</string>
+    <string name="enter_image_web_url">Please enter the image url</string>
+    <string name="validate">Validate</string>
+</resources>

@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".view.activities.MainActivity">
+
+    <com.worldline.breadcrumbview.BreadcrumbView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:id="@+id/breadCrumbHeader"
+        app:maxLevels="3"
+        app:separator="\\."
+        app:path="Preview.Pre-Download Configurations.Start Downloading"
+        app:labelColor="@color/colorAccent"
+        app:labelTextSize="16sp"
+        app:labelTextColor="#000"
+        app:endType="Closed"
+        app:startType="Open"
+        android:layout_margin="@dimen/margin_type2"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:id="@+id/linearActions"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_margin="@dimen/margin_type2"
+        android:weightSum="3">
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnBackStep"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/back"
+            android:layout_margin="@dimen/margin_type1"
+            android:textAllCaps="true"/>
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:visibility="invisible"
+            android:layout_margin="@dimen/margin_type1"/>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnNextStep"
+            style="@style/Widget.MaterialComponents.Button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/next"
+            android:layout_margin="@dimen/margin_type1"
+            android:textAllCaps="true"/>
+    </LinearLayout>
+
+    <androidx.viewpager.widget.ViewPager
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:id="@+id/viewPagerContent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/breadCrumbHeader"
+        app:layout_constraintBottom_toTopOf="@id/linearActions"
+        android:layout_margin="@dimen/margin_type2"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
