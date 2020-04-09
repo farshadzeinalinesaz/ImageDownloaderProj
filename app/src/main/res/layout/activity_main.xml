@@ -15,7 +15,7 @@
         android:id="@+id/breadCrumbHeader"
         app:maxLevels="3"
         app:separator="\\."
-        app:path="Preview.Pre-Download Configurations.Start Downloading"
+        app:path="Preview"
         app:labelColor="@color/colorAccent"
         app:labelTextSize="16sp"
         app:labelTextColor="#000"
