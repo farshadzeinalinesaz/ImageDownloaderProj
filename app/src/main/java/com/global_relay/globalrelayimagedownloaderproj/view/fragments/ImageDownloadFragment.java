@@ -17,15 +17,12 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.global_relay.globalrelayimagedownloaderproj.R;
 import com.global_relay.globalrelayimagedownloaderproj.model.to.ImageTO;
-import com.google.android.material.button.MaterialButton;
-import com.google.android.material.textfield.TextInputEditText;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import butterknife.OnClick;
 
 public class ImageDownloadFragment extends Fragment {
 

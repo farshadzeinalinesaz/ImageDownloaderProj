@@ -8,14 +8,19 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentStatePagerAdapter;
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProviders;
 import androidx.viewpager.widget.ViewPager;
 
 import com.global_relay.globalrelayimagedownloaderproj.R;
+import com.global_relay.globalrelayimagedownloaderproj.model.to.ImageTO;
 import com.global_relay.globalrelayimagedownloaderproj.view.fragments.ImageDownloadFragment;
 import com.global_relay.globalrelayimagedownloaderproj.view.fragments.ImagePreviewFragment;
 import com.global_relay.globalrelayimagedownloaderproj.view.fragments.PreDownloadConfigurationFragment;
 import com.google.android.material.button.MaterialButton;
 import com.worldline.breadcrumbview.BreadcrumbView;
+import com.global_relay.globalrelayimagedownloaderproj.view_model.ImageDownloaderViewModel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,8 +29,12 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
-public class MainActivity extends AppCompatActivity implements ViewPager.OnPageChangeListener
+public class MainActivity extends AppCompatActivity implements ViewPager.OnPageChangeListener, Observer<List<ImageTO>>
 {
+    private ImageDownloaderViewModel imageDownloaderViewModel;
+    private LiveData<List<ImageTO>> userListLiveData;
+
+
     private String[] pagesTitles;
 
     private List<Fragment> fragmentList = new ArrayList<>();
@@ -50,10 +59,18 @@ public class MainActivity extends AppCompatActivity implements ViewPager.OnPageC
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
+        setTitle(getResources().getString(R.string.app_name_title));
         initFragmentsList();
         btnBackStep.setEnabled(false);
         pagesTitles=getResources().getStringArray(R.array.pagesTitles);
         setupViewPagerContent();
+        imageDownloaderViewModel = ViewModelProviders.of(this).get(ImageDownloaderViewModel.class);
+        userListLiveData = imageDownloaderViewModel.getImagesList();
+        userListLiveData.observe(this, this);
+    }
+
+    public ImageDownloaderViewModel getImageDownloaderViewModel() {
+        return imageDownloaderViewModel;
     }
 
     private void initFragmentsList() {
@@ -104,6 +121,11 @@ public class MainActivity extends AppCompatActivity implements ViewPager.OnPageC
 
     @Override
     public void onPageScrollStateChanged(int state) {
+
+    }
+
+    @Override
+    public void onChanged(List<ImageTO> imageTOS) {
 
     }
 

@@ -40,7 +40,10 @@ public class SplashActivity extends AppCompatActivity
     private void checkRequirePermissions() {
         String[] permissions = {
                 Manifest.permission.INTERNET,
-                Manifest.permission.WRITE_EXTERNAL_STORAGE
+                Manifest.permission.ACCESS_WIFI_STATE,
+                Manifest.permission.ACCESS_NETWORK_STATE,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                Manifest.permission.READ_EXTERNAL_STORAGE,
         };
         for (String permission : permissions) {
             if (ActivityCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_DENIED) {

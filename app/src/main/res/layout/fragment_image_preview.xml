@@ -37,8 +37,9 @@
     </com.google.android.material.textfield.TextInputLayout>
 
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recycleImagePreview"
+
+    <WebView
+        android:id="@+id/webViewImagePreview"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_margin="@dimen/margin_type1"

@@ -6,6 +6,7 @@ public class ImageTO
     private String title;
     private String desc;
     private String imagePath;
+    private boolean isDownloaded;
 
     public ImageTO(int id, String title, String desc,String imagePath) {
         this.id = id;
@@ -44,5 +45,13 @@ public class ImageTO
 
     public void setImagePath(String imagePath) {
         this.imagePath = imagePath;
+    }
+
+    public boolean isDownloaded() {
+        return isDownloaded;
+    }
+
+    public void setDownloaded(boolean downloaded) {
+        isDownloaded = downloaded;
     }
 }

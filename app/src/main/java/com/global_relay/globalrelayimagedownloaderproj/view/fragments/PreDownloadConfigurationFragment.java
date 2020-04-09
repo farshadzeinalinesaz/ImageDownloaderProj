@@ -12,6 +12,8 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.Observer;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.ListAdapter;
@@ -19,19 +21,23 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.global_relay.globalrelayimagedownloaderproj.R;
 import com.global_relay.globalrelayimagedownloaderproj.model.to.ImageTO;
+import com.global_relay.globalrelayimagedownloaderproj.view.activities.MainActivity;
+import com.global_relay.globalrelayimagedownloaderproj.view_model.ImageDownloaderViewModel;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.obsez.android.lib.filechooser.ChooserDialog;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
-public class PreDownloadConfigurationFragment extends Fragment {
+public class PreDownloadConfigurationFragment extends Fragment implements Observer<List<ImageTO>> {
+    public ImageDownloaderViewModel imageDownloaderViewModel;
+    private MutableLiveData<List<ImageTO>> imageMutableLiveData = new MutableLiveData<>();
+
     private LinearLayoutManager linearLayoutManager;
     private ImagePreviewRecycleAdapter imagePreviewRecycleAdapter;
 
@@ -55,10 +61,26 @@ public class PreDownloadConfigurationFragment extends Fragment {
         return fragment;
     }
 
+    private DiffUtil.ItemCallback<ImageTO> diffCallback = new DiffUtil.ItemCallback<ImageTO>() {
+        @Override
+        public boolean areItemsTheSame(@NonNull ImageTO oldItem, @NonNull ImageTO newItem) {
+            return oldItem.getId() == newItem.getId();
+        }
+
+        @Override
+        public boolean areContentsTheSame(@NonNull ImageTO oldItem, @NonNull ImageTO newItem) {
+            return oldItem.getTitle().equals(newItem.getTitle()) && oldItem.getDesc().equals(newItem.getDesc());
+        }
+    };
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_pre_download_configuration, container, false);
         ButterKnife.bind(this, rootView);
+        imageDownloaderViewModel = ((MainActivity) getActivity()).getImageDownloaderViewModel();
+        imageMutableLiveData = imageDownloaderViewModel.getImageMutableLiveData();
+        imageMutableLiveData.observe(this, this);
+        imageDownloaderViewModel.startFetchingImages("");
         setupRecycleImagePreview();
         return rootView;
     }
@@ -66,22 +88,13 @@ public class PreDownloadConfigurationFragment extends Fragment {
 
     private void setupRecycleImagePreview() {
         linearLayoutManager = new LinearLayoutManager(getActivity(), LinearLayoutManager.VERTICAL, false);
-        imagePreviewRecycleAdapter = new ImagePreviewRecycleAdapter();
+        imagePreviewRecycleAdapter = new ImagePreviewRecycleAdapter(diffCallback);
         recycleImagePreview.setLayoutManager(linearLayoutManager);
-        imagePreviewRecycleAdapter.submitList(fakeImageTOList());
+        imagePreviewRecycleAdapter.submitList(imageMutableLiveData.getValue());
         recycleImagePreview.setAdapter(imagePreviewRecycleAdapter);
     }
 
-
-    private List<ImageTO> fakeImageTOList() {
-        List<ImageTO> imageTOList = new ArrayList<>();
-        imageTOList.add(new ImageTO(1, "Title 1", "Desc 1", null));
-        imageTOList.add(new ImageTO(1, "Title 2", "Desc 2", null));
-        imageTOList.add(new ImageTO(1, "Title 3", "Desc 3", null));
-        return imageTOList;
-    }
-
-    @OnClick({R.id.switchDefaultLocation,R.id.switchShowNotification,R.id.btnChangeSaveLocation})
+    @OnClick({R.id.switchDefaultLocation, R.id.switchShowNotification, R.id.btnChangeSaveLocation})
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.switchDefaultLocation: {
@@ -112,21 +125,16 @@ public class PreDownloadConfigurationFragment extends Fragment {
         }
     }
 
+    @Override
+    public void onChanged(List<ImageTO> imageTOS) {
+        imagePreviewRecycleAdapter.submitList(imageMutableLiveData.getValue());
+        recycleImagePreview.setAdapter(imagePreviewRecycleAdapter);
+    }
 
-    public static class ImagePreviewRecycleAdapter extends ListAdapter<ImageTO, ImagePreviewRecycleAdapter.ViewHolder> {
-        private static DiffUtil.ItemCallback<ImageTO> diffCallback = new DiffUtil.ItemCallback<ImageTO>() {
-            @Override
-            public boolean areItemsTheSame(@NonNull ImageTO oldItem, @NonNull ImageTO newItem) {
-                return oldItem.getId() == newItem.getId();
-            }
 
-            @Override
-            public boolean areContentsTheSame(@NonNull ImageTO oldItem, @NonNull ImageTO newItem) {
-                return oldItem.getTitle().equals(newItem.getTitle()) && oldItem.getDesc().equals(newItem.getDesc());
-            }
-        };
+    public class ImagePreviewRecycleAdapter extends ListAdapter<ImageTO, ImagePreviewRecycleAdapter.ViewHolder> {
 
-        public ImagePreviewRecycleAdapter() {
+        public ImagePreviewRecycleAdapter(DiffUtil.ItemCallback<ImageTO> diffCallback) {
             super(diffCallback);
         }
 
@@ -166,6 +174,7 @@ public class PreDownloadConfigurationFragment extends Fragment {
                 ImageTO imageTO = getItem(position);
                 txtTitle.setText(imageTO.getTitle());
                 txtSubTitle.setText(imageTO.getDesc());
+                imageDownloaderViewModel.loadImage(getActivity(), imageTO.getImagePath(), imgPreview);
             }
         }
     }
