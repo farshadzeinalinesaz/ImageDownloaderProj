@@ -33,7 +33,6 @@
         <ProgressBar
             android:id="@+id/progressBarDownload"
             style="@style/Widget.AppCompat.ProgressBar.Horizontal"
-            android:indeterminateDrawable="@drawable/progress_indeterminate_horizontal"
             android:layout_width="match_parent"
             android:layout_height="@dimen/progress_bar_height"
             android:layout_below="@id/txtTitle"

@@ -1,5 +1,6 @@
 package com.global_relay.globalrelayimagedownloaderproj.view.fragments;
 
+import android.content.Context;
 import android.net.http.SslError;
 import android.os.Bundle;
 import android.util.Patterns;
@@ -13,12 +14,13 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
+import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Observer;
 
 import com.global_relay.globalrelayimagedownloaderproj.R;
-import com.global_relay.globalrelayimagedownloaderproj.view.activities.MainActivity;
+import com.global_relay.globalrelayimagedownloaderproj.view.impl.IPreviewImageView;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 
@@ -28,6 +30,7 @@ import butterknife.OnClick;
 
 public class ImagePreviewFragment extends Fragment implements Observer<String> {
 
+    private IPreviewImageView iPreviewImageView;
     private MutableLiveData<String> webData;
 
     @BindView(R.id.btnUrlLoader)
@@ -46,19 +49,27 @@ public class ImagePreviewFragment extends Fragment implements Observer<String> {
     }
 
     @Override
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
+        try {
+            iPreviewImageView = (IPreviewImageView) getActivity();
+        } catch (Exception ex) {
+        }
+    }
+
+    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_image_preview, container, false);
         ButterKnife.bind(this, rootView);
         setupWebViewImagePreview();
         //todo remove this line later
         editImageUrl.setText("https://unsplash.com/s/photos/sample");
-        webData=((MainActivity)getActivity()).getImageDownloaderViewModel().getWebData();
-        webData.observe(this,this);
+        webData = iPreviewImageView.getImageDownloaderViewModel().getWebData();
+        webData.observe(this, this);
         return rootView;
     }
 
-    private void setupWebViewImagePreview()
-    {
+    private void setupWebViewImagePreview() {
         WebSettings webSettings = webViewImagePreview.getSettings();
         webSettings.setJavaScriptEnabled(true);
         webSettings.setLoadsImagesAutomatically(true);
@@ -70,8 +81,8 @@ public class ImagePreviewFragment extends Fragment implements Observer<String> {
         webViewImagePreview.setScrollBarStyle(View.SCROLLBARS_INSIDE_OVERLAY);
         webViewImagePreview.setWebViewClient(new AppWebViewClient());
     }
-    private void loadWebViewImagePreview(String data)
-    {
+
+    private void loadWebViewImagePreview(String data) {
         webViewImagePreview.loadDataWithBaseURL("", data, "text/html", "UTF-8", "");
     }
 
@@ -84,23 +95,20 @@ public class ImagePreviewFragment extends Fragment implements Observer<String> {
                 editImageUrl.setError(getResources().getString(R.string.invalid_url));
                 return;
             }
-            ((MainActivity)getActivity()).getImageDownloaderViewModel().startLoadingData(url);
+            iPreviewImageView.getImageDownloaderViewModel().startLoadingData(url);
         }
     }
 
     @Override
-    public void onChanged(String webData)
-    {
+    public void onChanged(String webData) {
         loadWebViewImagePreview(webData);
-        if(webData!=null && !webData.isEmpty())
-        {
-            ((MainActivity)getActivity()).startObservingFragment2(webData);
+        if (webData != null && !webData.isEmpty()) {
+            iPreviewImageView.imagePreviewStartObserving(webData);
         }
     }
 
 
-    private static class AppWebViewClient extends WebViewClient
-    {
+    private static class AppWebViewClient extends WebViewClient {
         @Override
         public void onReceivedSslError(WebView view, SslErrorHandler handler, SslError error) {
             //super.onReceivedSslError(view, handler, error);

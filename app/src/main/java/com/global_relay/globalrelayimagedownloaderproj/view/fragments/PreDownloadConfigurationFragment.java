@@ -1,6 +1,7 @@
 package com.global_relay.globalrelayimagedownloaderproj.view.fragments;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -23,6 +24,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.global_relay.globalrelayimagedownloaderproj.R;
 import com.global_relay.globalrelayimagedownloaderproj.model.to.ImageTO;
 import com.global_relay.globalrelayimagedownloaderproj.view.activities.MainActivity;
+import com.global_relay.globalrelayimagedownloaderproj.view.impl.IPreDownloadConfigurationView;
 import com.global_relay.globalrelayimagedownloaderproj.view_model.ImageDownloaderViewModel;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.switchmaterial.SwitchMaterial;
@@ -37,6 +39,8 @@ import butterknife.OnClick;
 
 public class PreDownloadConfigurationFragment extends Fragment implements Observer<List<ImageTO>> {
     private static final int FILE_CHOOSER_RQ=100;
+
+    private IPreDownloadConfigurationView iPreDownloadConfigurationView;
 
     public ImageDownloaderViewModel imageDownloaderViewModel;
     private MutableLiveData<List<ImageTO>> imageMutableLiveData = new MutableLiveData<>();
@@ -74,11 +78,21 @@ public class PreDownloadConfigurationFragment extends Fragment implements Observ
         }
     };
 
+
+    @Override
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
+        try {
+            iPreDownloadConfigurationView= (IPreDownloadConfigurationView) getActivity();
+        }
+        catch (Exception ex){}
+    }
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_pre_download_configuration, container, false);
         ButterKnife.bind(this, rootView);
-        imageDownloaderViewModel = ((MainActivity) getActivity()).getImageDownloaderViewModel();
+        imageDownloaderViewModel = iPreDownloadConfigurationView.getImageDownloaderViewModel();
         imageMutableLiveData = imageDownloaderViewModel.getImageMutableLiveData();
         setupRecycleImagePreview();
 

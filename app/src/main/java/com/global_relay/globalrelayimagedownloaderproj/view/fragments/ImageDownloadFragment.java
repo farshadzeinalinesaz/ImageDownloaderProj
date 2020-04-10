@@ -1,5 +1,6 @@
 package com.global_relay.globalrelayimagedownloaderproj.view.fragments;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.LayoutInflater;
@@ -21,6 +22,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.global_relay.globalrelayimagedownloaderproj.R;
 import com.global_relay.globalrelayimagedownloaderproj.model.to.ImageTO;
 import com.global_relay.globalrelayimagedownloaderproj.view.activities.MainActivity;
+import com.global_relay.globalrelayimagedownloaderproj.view.impl.IDownloadImageView;
 import com.global_relay.globalrelayimagedownloaderproj.view_model.ImageDownloaderViewModel;
 
 import java.util.ArrayList;
@@ -30,6 +32,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 
 public class ImageDownloadFragment extends Fragment implements Observer<ImageTO> {
+    private IDownloadImageView iDownloadImageView;
     public ImageDownloaderViewModel imageDownloaderViewModel;
     private MutableLiveData<ImageTO> imageTOMutableLiveData=new MutableLiveData<>();
     private List<ImageTO> imageTOList = new ArrayList<>();
@@ -65,6 +68,15 @@ public class ImageDownloadFragment extends Fragment implements Observer<ImageTO>
     };
 
     @Override
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
+        try {
+            iDownloadImageView= (IDownloadImageView) getActivity();
+        }
+        catch (Exception ex){}
+    }
+
+    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_image_download, container, false);
         ButterKnife.bind(this, rootView);
@@ -77,7 +89,7 @@ public class ImageDownloadFragment extends Fragment implements Observer<ImageTO>
 
     public void startObserving()
     {
-        imageDownloaderViewModel = ((MainActivity) getActivity()).getImageDownloaderViewModel();
+        imageDownloaderViewModel = iDownloadImageView.getImageDownloaderViewModel();
         imageTOMutableLiveData=imageDownloaderViewModel.getImageTOMutableLiveData();
         imageTOMutableLiveData.observe(this,this);
         imageTOList = imageDownloaderViewModel.getImageMutableLiveData().getValue();

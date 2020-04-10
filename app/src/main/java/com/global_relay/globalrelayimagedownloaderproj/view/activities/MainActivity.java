@@ -25,6 +25,9 @@ import com.global_relay.globalrelayimagedownloaderproj.utils.Utils;
 import com.global_relay.globalrelayimagedownloaderproj.view.fragments.ImageDownloadFragment;
 import com.global_relay.globalrelayimagedownloaderproj.view.fragments.ImagePreviewFragment;
 import com.global_relay.globalrelayimagedownloaderproj.view.fragments.PreDownloadConfigurationFragment;
+import com.global_relay.globalrelayimagedownloaderproj.view.impl.IDownloadImageView;
+import com.global_relay.globalrelayimagedownloaderproj.view.impl.IPreDownloadConfigurationView;
+import com.global_relay.globalrelayimagedownloaderproj.view.impl.IPreviewImageView;
 import com.global_relay.globalrelayimagedownloaderproj.view_model.ImageDownloaderViewModel;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.snackbar.Snackbar;
@@ -37,7 +40,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
-public class MainActivity extends AppCompatActivity implements ViewPager.OnPageChangeListener, Observer<List<ImageTO>>
+public class MainActivity extends AppCompatActivity implements ViewPager.OnPageChangeListener, Observer<List<ImageTO>>, IPreviewImageView, IPreDownloadConfigurationView, IDownloadImageView
 {
     private Utils utils;
     private ImageDownloaderViewModel imageDownloaderViewModel;
@@ -113,8 +116,14 @@ public class MainActivity extends AppCompatActivity implements ViewPager.OnPageC
         unregisterReceiver(receiver);
     }
 
+    @Override
     public ImageDownloaderViewModel getImageDownloaderViewModel() {
         return imageDownloaderViewModel;
+    }
+
+    @Override
+    public void imagePreviewStartObserving(String webData) {
+        preDownloadConfigurationFragment.startObserving(webData);
     }
 
     private void initFragmentsList() {
@@ -207,11 +216,6 @@ public class MainActivity extends AppCompatActivity implements ViewPager.OnPageC
     @Override
     public void onChanged(List<ImageTO> imageTOS) {
 
-    }
-
-    // TODO: 09/04/20 Update this code and replace with interface later
-    public void startObservingFragment2(String webData) {
-        preDownloadConfigurationFragment.startObserving(webData);
     }
 
     private class ViewPagerAdapter extends FragmentStatePagerAdapter {
