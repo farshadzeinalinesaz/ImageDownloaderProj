@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.Network;
 import android.net.NetworkInfo;
+import android.os.Environment;
 import android.provider.Settings;
 import android.view.View;
 
@@ -26,6 +27,26 @@ public class Utils {
         }
         return utils;
     }
+
+
+    public boolean hasDeviceExternalStorage()
+    {
+        boolean isSDPresent = Environment.getExternalStorageState().equals(android.os.Environment.MEDIA_MOUNTED);
+        boolean isSDSupportedDevice = Environment.isExternalStorageRemovable();
+        return isSDSupportedDevice && isSDPresent;
+    }
+
+    public String getExternalStoragePath()
+    {
+        return Environment.getExternalStorageDirectory().getAbsolutePath();
+    }
+
+    public String getCameraGalleryPath()
+    {
+        return Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).getAbsolutePath();
+    }
+
+
 
     public boolean writeToFile(String path, byte[] data) {
         try {

@@ -7,7 +7,6 @@ import android.content.IntentFilter;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -16,7 +15,6 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentStatePagerAdapter;
 import androidx.lifecycle.LiveData;
-import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.viewpager.widget.ViewPager;
@@ -27,10 +25,10 @@ import com.global_relay.globalrelayimagedownloaderproj.utils.Utils;
 import com.global_relay.globalrelayimagedownloaderproj.view.fragments.ImageDownloadFragment;
 import com.global_relay.globalrelayimagedownloaderproj.view.fragments.ImagePreviewFragment;
 import com.global_relay.globalrelayimagedownloaderproj.view.fragments.PreDownloadConfigurationFragment;
+import com.global_relay.globalrelayimagedownloaderproj.view_model.ImageDownloaderViewModel;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.worldline.breadcrumbview.BreadcrumbView;
-import com.global_relay.globalrelayimagedownloaderproj.view_model.ImageDownloaderViewModel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,8 +37,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
-public class MainActivity extends AppCompatActivity implements ViewPager.OnPageChangeListener, Observer<List<ImageTO>>
-{
+public class MainActivity extends AppCompatActivity implements ViewPager.OnPageChangeListener, Observer<List<ImageTO>> {
     private Utils utils;
     private ImageDownloaderViewModel imageDownloaderViewModel;
     private LiveData<List<ImageTO>> userListLiveData;
@@ -67,7 +64,7 @@ public class MainActivity extends AppCompatActivity implements ViewPager.OnPageC
     @BindView(R.id.btnNextStep)
     public MaterialButton btnNextStep;
 
-    private BroadcastReceiver receiver=new BroadcastReceiver() {
+    private BroadcastReceiver receiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
@@ -87,19 +84,18 @@ public class MainActivity extends AppCompatActivity implements ViewPager.OnPageC
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
-        utils=Utils.getInstance(this);
+        utils = Utils.getInstance(this);
         setTitle(getResources().getString(R.string.app_name_title));
         initFragmentsList();
         btnBackStep.setEnabled(false);
-        pagesTitles=getResources().getStringArray(R.array.pagesTitles);
+        pagesTitles = getResources().getStringArray(R.array.pagesTitles);
         setupViewPagerContent();
         imageDownloaderViewModel = ViewModelProviders.of(this).get(ImageDownloaderViewModel.class);
         userListLiveData = imageDownloaderViewModel.getImagesList();
         userListLiveData.observe(this, this);
 
 
-        if(!utils.isInternetAvailable())
-        {
+        if (!utils.isInternetAvailable()) {
             setupNoInternetSnackBar();
         }
     }
@@ -136,9 +132,8 @@ public class MainActivity extends AppCompatActivity implements ViewPager.OnPageC
         viewPagerContent.addOnPageChangeListener(this);
     }
 
-    private void setupNoInternetSnackBar()
-    {
-        snackBarNoInternet=utils.showSnackBar(rootConstraintLayout, getResources().getString(R.string.internet_disconnected), Snackbar.LENGTH_INDEFINITE, getResources().getString(R.string.check), new View.OnClickListener() {
+    private void setupNoInternetSnackBar() {
+        snackBarNoInternet = utils.showSnackBar(rootConstraintLayout, getResources().getString(R.string.internet_disconnected), Snackbar.LENGTH_INDEFINITE, getResources().getString(R.string.check), new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 utils.openDeviceConnectionSetting();
@@ -146,9 +141,8 @@ public class MainActivity extends AppCompatActivity implements ViewPager.OnPageC
         });
     }
 
-    private IntentFilter getReceiverIntentFilter()
-    {
-        IntentFilter intentFilter=new IntentFilter();
+    private IntentFilter getReceiverIntentFilter() {
+        IntentFilter intentFilter = new IntentFilter();
         // Indicates a change in the Wi-Fi P2P status.
         intentFilter.addAction(WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION);
         return intentFilter;
@@ -159,11 +153,11 @@ public class MainActivity extends AppCompatActivity implements ViewPager.OnPageC
     public void doClick(View view) {
         switch (view.getId()) {
             case R.id.btnNextStep: {
-                    viewPagerContent.setCurrentItem(viewPagerContent.getCurrentItem()+1);
+                viewPagerContent.setCurrentItem(viewPagerContent.getCurrentItem() + 1);
                 break;
             }
             case R.id.btnBackStep: {
-                viewPagerContent.setCurrentItem(viewPagerContent.getCurrentItem()-1);
+                viewPagerContent.setCurrentItem(viewPagerContent.getCurrentItem() - 1);
                 break;
             }
             default: {
@@ -195,8 +189,7 @@ public class MainActivity extends AppCompatActivity implements ViewPager.OnPageC
     }
 
     // TODO: 09/04/20 Update this code and replace with interface later
-    public void startObservingFragment2(String webData)
-    {
+    public void startObservingFragment2(String webData) {
         preDownloadConfigurationFragment.startObserving(webData);
     }
 

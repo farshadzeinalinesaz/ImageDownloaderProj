@@ -71,12 +71,15 @@ public class ImageDownloadFragment extends Fragment {
     {
         imageDownloaderViewModel = ((MainActivity) getActivity()).getImageDownloaderViewModel();
         imageTOList = imageDownloaderViewModel.getImageMutableLiveData().getValue();
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                imageDownloaderViewModel.startDownloadSaveImages(imageTOList.get(0).getImagePath());
-            }
-        },3000);
+        if(imageTOList!=null)
+        {
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    imageDownloaderViewModel.startDownloadSaveImages(imageTOList.get(0).getImagePath());
+                }
+            },3000);
+        }
     }
 
     private void setupRecycleImagePreview()

@@ -1,16 +1,17 @@
 package com.global_relay.globalrelayimagedownloaderproj.view.fragments;
 
+import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
-import android.os.Environment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Observer;
@@ -25,9 +26,9 @@ import com.global_relay.globalrelayimagedownloaderproj.view.activities.MainActiv
 import com.global_relay.globalrelayimagedownloaderproj.view_model.ImageDownloaderViewModel;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.switchmaterial.SwitchMaterial;
-import com.obsez.android.lib.filechooser.ChooserDialog;
+import com.nbsp.materialfilepicker.MaterialFilePicker;
+import com.nbsp.materialfilepicker.ui.FilePickerActivity;
 
-import java.io.File;
 import java.util.List;
 
 import butterknife.BindView;
@@ -35,6 +36,8 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 
 public class PreDownloadConfigurationFragment extends Fragment implements Observer<List<ImageTO>> {
+    private static final int FILE_CHOOSER_RQ=100;
+
     public ImageDownloaderViewModel imageDownloaderViewModel;
     private MutableLiveData<List<ImageTO>> imageMutableLiveData = new MutableLiveData<>();
 
@@ -78,11 +81,12 @@ public class PreDownloadConfigurationFragment extends Fragment implements Observ
         imageDownloaderViewModel = ((MainActivity) getActivity()).getImageDownloaderViewModel();
         imageMutableLiveData = imageDownloaderViewModel.getImageMutableLiveData();
         setupRecycleImagePreview();
+
+        txtSaveLocationVal.setText(imageDownloaderViewModel.getDataLocalPath());
         return rootView;
     }
 
-    public void startObserving(String webData)
-    {
+    public void startObserving(String webData) {
         imageMutableLiveData.observe(this, this);
         imageDownloaderViewModel.startFetchingImages(webData);
     }
@@ -104,17 +108,11 @@ public class PreDownloadConfigurationFragment extends Fragment implements Observ
                 break;
             }
             case R.id.btnChangeSaveLocation: {
-                File initialFile = Environment.getExternalStorageDirectory();
-                new ChooserDialog(getActivity())
-                        .withFilter(true, false)
-                        .withStartFile(initialFile.getAbsolutePath())
-                        // to handle the result(s)
-                        .withChosenListener(new ChooserDialog.Result() {
-                            @Override
-                            public void onChoosePath(String path, File pathFile) {
-                                Toast.makeText(getActivity(), "FOLDER: " + path, Toast.LENGTH_SHORT).show();
-                            }
-                        }).build().show();
+                new MaterialFilePicker()
+                        .withActivity(getActivity())
+                        .withRequestCode(FILE_CHOOSER_RQ)
+                        .withHiddenFiles(true)
+                        .start();
                 break;
             }
             default: {
@@ -127,6 +125,18 @@ public class PreDownloadConfigurationFragment extends Fragment implements Observ
     public void onChanged(List<ImageTO> imageTOS) {
         imagePreviewRecycleAdapter.submitList(imageMutableLiveData.getValue());
         recycleImagePreview.setAdapter(imagePreviewRecycleAdapter);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == FILE_CHOOSER_RQ && resultCode == Activity.RESULT_OK) {
+            String filePath = data.getStringExtra(FilePickerActivity.RESULT_FILE_PATH);
+            if (filePath != null && !filePath.isEmpty()) {
+                imageDownloaderViewModel.updateDataLocalPath(filePath);
+                txtSaveLocationVal.setText(imageDownloaderViewModel.getDataLocalPath());
+            }
+        }
     }
 
 

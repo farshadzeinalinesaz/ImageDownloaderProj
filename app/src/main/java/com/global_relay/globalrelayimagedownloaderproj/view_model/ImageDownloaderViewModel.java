@@ -13,6 +13,7 @@ import androidx.lifecycle.MutableLiveData;
 import com.bumptech.glide.Glide;
 import com.global_relay.globalrelayimagedownloaderproj.R;
 import com.global_relay.globalrelayimagedownloaderproj.model.WebCrawler;
+import com.global_relay.globalrelayimagedownloaderproj.model.local.SettingSP;
 import com.global_relay.globalrelayimagedownloaderproj.model.repo.DownloaderApi;
 import com.global_relay.globalrelayimagedownloaderproj.model.to.ImageTO;
 import com.global_relay.globalrelayimagedownloaderproj.utils.Utils;
@@ -35,8 +36,7 @@ public class ImageDownloaderViewModel extends AndroidViewModel
     private Utils utils;
     public ImageDownloaderViewModel(@NonNull Application application) {
         super(application);
-        //todo update this part later
-        downloaderApi=new DownloaderApi("http://www.google.com");
+        downloaderApi=new DownloaderApi("https://www.globalrelay.com/");
         webCrawler=new WebCrawler();
         utils=Utils.getInstance(application.getApplicationContext());
     }
@@ -53,6 +53,23 @@ public class ImageDownloaderViewModel extends AndroidViewModel
         return webCrawler.getImageMutableLiveData();
     }
 
+    public boolean updateDataLocalPath(String localPath)
+    {
+        SettingSP settingSP=new SettingSP(getApplication().getApplicationContext());
+        return settingSP.updateDataLocalPath(localPath);
+    }
+
+    public String getDataLocalPath()
+    {
+        SettingSP settingSP=new SettingSP(getApplication().getApplicationContext());
+        String localPath=settingSP.getDataLocalPath();
+        if(localPath==null || localPath.isEmpty())
+        {
+            localPath = utils.hasDeviceExternalStorage()?utils.getExternalStoragePath():utils.getCameraGalleryPath();
+        }
+        return localPath;
+    }
+
     public void startDownloadSaveImages(String url)
     {
         downloaderApi.download(url, new Callback<ResponseBody>() {
@@ -65,7 +82,7 @@ public class ImageDownloaderViewModel extends AndroidViewModel
                 }
                 try
                 {
-                    utils.writeToFile(Environment.getExternalStorageDirectory().getAbsolutePath(),response.body().bytes());
+                    utils.writeToFile(getDataLocalPath(),response.body().bytes());
                 }
                 catch (IOException ex)
                 {
