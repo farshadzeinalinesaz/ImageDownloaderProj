@@ -53,8 +53,7 @@ public class ImagePreviewFragment extends Fragment implements Observer<String> {
         View rootView = inflater.inflate(R.layout.fragment_image_preview, container, false);
         ButterKnife.bind(this, rootView);
         setupWebViewImagePreview();
-        //todo remove this line later
-        editImageUrl.setText("https://unsplash.com/s/photos/sample");
+
         return rootView;
     }
 
