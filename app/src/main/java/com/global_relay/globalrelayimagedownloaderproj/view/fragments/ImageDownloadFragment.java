@@ -21,17 +21,20 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.global_relay.globalrelayimagedownloaderproj.R;
 import com.global_relay.globalrelayimagedownloaderproj.model.to.ImageTO;
-import com.global_relay.globalrelayimagedownloaderproj.view_model.ImageDownloadViewModel;
+import com.global_relay.globalrelayimagedownloaderproj.view_model.ShareImageDownloadViewModel;
+import com.google.android.material.button.MaterialButton;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 
 public class ImageDownloadFragment extends Fragment implements Observer<ImageTO> {
-    public ImageDownloadViewModel imageDownloadViewModel;
+    public ShareImageDownloadViewModel shareImageDownloadViewModel;
     private MutableLiveData<ImageTO> imageTOMutableLiveData = new MutableLiveData<>();
+    private MutableLiveData<List<ImageTO>> imageMutableLiveData = new MutableLiveData<>();
     private List<ImageTO> imageTOList = new ArrayList<>();
 
     private LinearLayoutManager linearLayoutManager;
@@ -40,6 +43,8 @@ public class ImageDownloadFragment extends Fragment implements Observer<ImageTO>
     private String remaining_items;
     public boolean isDownloading;
 
+    @BindView(R.id.btnDownload)
+    public MaterialButton btnDownload;
     @BindView(R.id.txtDownloadStatusTitle)
     public TextView txtDownloadStatusTitle;
     @BindView(R.id.recycleImagePreview)
@@ -71,26 +76,38 @@ public class ImageDownloadFragment extends Fragment implements Observer<ImageTO>
         ButterKnife.bind(this, rootView);
         download_status = getResources().getString(R.string.download_status);
         remaining_items = getResources().getString(R.string.remaining_items);
+        setupRecycleImagePreview();
         return rootView;
     }
 
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        imageDownloadViewModel = ViewModelProviders.of(this).get(ImageDownloadViewModel.class);
+        shareImageDownloadViewModel = ViewModelProviders.of(getActivity()).get(ShareImageDownloadViewModel.class);
+        imageTOMutableLiveData = shareImageDownloadViewModel.getImageTOMutableLiveData();
+        imageTOMutableLiveData.observe(getViewLifecycleOwner(), this);
+        imageMutableLiveData=shareImageDownloadViewModel.getImageMutableLiveData();
+        imageMutableLiveData.observe(getViewLifecycleOwner(), new Observer<List<ImageTO>>() {
+            @Override
+            public void onChanged(List<ImageTO> imageTOS) {
+                imageTOList=imageTOS;
+                imagePreviewRecycleAdapter.submitList(imageTOS);
+                recycleImagePreview.setAdapter(imagePreviewRecycleAdapter);
+            }
+        });
     }
 
-    public void startObserving(List<ImageTO> imageTOList) {
-        imageTOMutableLiveData = imageDownloadViewModel.getImageTOMutableLiveData();
-        imageTOMutableLiveData.observe(this, this);
-        imageDownloadViewModel.getImageMutableLiveData().setValue(imageTOList);
-        this.imageTOList=imageTOList;
-    }
 
-    public void startDownloading() {
-        if (imageTOList != null && imageTOList.size() > 0) {
-            isDownloading=true;
-            imageDownloadViewModel.startDownloadSaveImages(imageTOList.get(0));
+    @OnClick({R.id.btnDownload})
+    public void doClick(View view)
+    {
+        if(view.getId()==R.id.btnDownload)
+        {
+            if (imageTOList != null && imageTOList.size() > 0) {
+                isDownloading=true;
+                shareImageDownloadViewModel.startDownloadSaveImages(imageTOList.get(0));
+                btnDownload.setEnabled(false);
+            }
         }
     }
 
@@ -113,11 +130,12 @@ public class ImageDownloadFragment extends Fragment implements Observer<ImageTO>
             imagePreviewRecycleAdapter.notifyItemRemoved(0);
         }
         if (imageTOList != null && imageTOList.size() > 0) {
-            imageDownloadViewModel.startDownloadSaveImages(imageTOList.get(0));
+            shareImageDownloadViewModel.startDownloadSaveImages(imageTOList.get(0));
         }
         else
         {
             isDownloading=false;
+            btnDownload.setEnabled(true);
         }
     }
 
@@ -156,7 +174,7 @@ public class ImageDownloadFragment extends Fragment implements Observer<ImageTO>
             private void setData(int position) {
                 ImageTO imageTO = getItem(position);
                 txtTitle.setText(imageTO.getTitle());
-                imageDownloadViewModel.loadImage(getActivity(), imageTO.getImagePath(), imgPreview);
+                shareImageDownloadViewModel.loadImage(getActivity(), imageTO.getImagePath(), imgPreview);
                 progressBarDownload.setVisibility(isDownloading ? View.VISIBLE : View.INVISIBLE);
             }
         }

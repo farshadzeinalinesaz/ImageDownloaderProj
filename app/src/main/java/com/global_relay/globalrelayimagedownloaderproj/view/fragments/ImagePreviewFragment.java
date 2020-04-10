@@ -21,7 +21,7 @@ import androidx.lifecycle.ViewModelProviders;
 
 import com.global_relay.globalrelayimagedownloaderproj.R;
 import com.global_relay.globalrelayimagedownloaderproj.view.activities.MainActivity;
-import com.global_relay.globalrelayimagedownloaderproj.view_model.ImagePreviewViewModel;
+import com.global_relay.globalrelayimagedownloaderproj.view_model.ShareImageDownloadViewModel;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 
@@ -30,7 +30,7 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 
 public class ImagePreviewFragment extends Fragment implements Observer<String> {
-    private ImagePreviewViewModel imagePreviewViewModel;
+    private ShareImageDownloadViewModel shareImageDownloadViewModel;
     private MutableLiveData<String> webData;
 
     @BindView(R.id.btnUrlLoader)
@@ -61,9 +61,9 @@ public class ImagePreviewFragment extends Fragment implements Observer<String> {
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        imagePreviewViewModel = ViewModelProviders.of(this).get(ImagePreviewViewModel.class);
-        webData = imagePreviewViewModel.getWebData();
-        webData.observe(this, this);
+        shareImageDownloadViewModel = ViewModelProviders.of(getActivity()).get(ShareImageDownloadViewModel.class);
+        webData = shareImageDownloadViewModel.getWebData();
+        webData.observe(getViewLifecycleOwner(), this);
     }
 
     private void setupWebViewImagePreview() {
@@ -92,16 +92,13 @@ public class ImagePreviewFragment extends Fragment implements Observer<String> {
                 editImageUrl.setError(getResources().getString(R.string.invalid_url));
                 return;
             }
-            imagePreviewViewModel.startLoadingData(url);
+            shareImageDownloadViewModel.startLoadingData(url);
         }
     }
 
     @Override
     public void onChanged(String webData) {
         loadWebViewImagePreview(webData);
-        if (getActivity() != null && webData != null && !webData.isEmpty()) {
-            imagePreviewViewModel.imagePreviewStartObserving((MainActivity) getActivity(), webData);
-        }
     }
 
 

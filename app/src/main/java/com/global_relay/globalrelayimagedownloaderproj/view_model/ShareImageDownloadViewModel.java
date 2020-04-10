@@ -25,14 +25,15 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class ImageDownloadViewModel extends AndroidViewModel {
+public class ShareImageDownloadViewModel extends AndroidViewModel {
     private static MutableLiveData<ImageTO> imageTOMutableLiveData = new MutableLiveData<>();
+    private MutableLiveData<String> webData = new MutableLiveData<>();
 
     private DownloaderApi downloaderApi;
     private Utils utils;
     private WebCrawler webCrawler;
 
-    public ImageDownloadViewModel(@NonNull Application application) {
+    public ShareImageDownloadViewModel(@NonNull Application application) {
         super(application);
         utils = Utils.getInstance(application.getApplicationContext());
         downloaderApi = new DownloaderApi("https://www.globalrelay.com/");
@@ -65,6 +66,10 @@ public class ImageDownloadViewModel extends AndroidViewModel {
         return localPath;
     }
 
+    public MutableLiveData<String> getWebData() {
+        return webData;
+    }
+
     public void startDownloadSaveImages(ImageTO imageTO) {
         if (imageTO.isDownloaded()) {
             imageTOMutableLiveData.setValue(imageTO);
@@ -91,6 +96,29 @@ public class ImageDownloadViewModel extends AndroidViewModel {
             @Override
             public void onFailure(Call<ResponseBody> call, Throwable t) {
                 imageTOMutableLiveData.setValue(imageTO);
+            }
+        });
+    }
+
+    public void startLoadingData(String url) {
+        downloaderApi.download(url, new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                if (response.code() != 200) {
+                    webData.setValue(null);
+                    return;
+                }
+                try {
+                    webData.setValue(response.body().string());
+                } catch (IOException ex) {
+                    webData.setValue(null);
+                }
+
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+                webData.setValue(null);
             }
         });
     }

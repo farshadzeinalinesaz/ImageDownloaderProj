@@ -102,10 +102,6 @@ public class MainActivity extends AppCompatActivity implements ViewPager.OnPageC
         unregisterReceiver(receiver);
     }
 
-    public void imagePreviewStartObserving(String webData) {
-        preDownloadConfigurationFragment.startObserving(webData);
-    }
-
     private void initFragmentsList() {
         imagePreviewFragment = ImagePreviewFragment.newInstance();
         preDownloadConfigurationFragment = PreDownloadConfigurationFragment.newInstance();
@@ -144,13 +140,7 @@ public class MainActivity extends AppCompatActivity implements ViewPager.OnPageC
     public void doClick(View view) {
         switch (view.getId()) {
             case R.id.btnNextStep: {
-                int tag = Integer.parseInt(view.getTag().toString());
-                if (tag == 0) {
-                    viewPagerContent.setCurrentItem(viewPagerContent.getCurrentItem() + 1);
-                } else {
-                    btnNextStep.setEnabled(false);
-                    imageDownloadFragment.startDownloading();
-                }
+                viewPagerContent.setCurrentItem(viewPagerContent.getCurrentItem() + 1);
                 break;
             }
             case R.id.btnBackStep: {
@@ -171,23 +161,8 @@ public class MainActivity extends AppCompatActivity implements ViewPager.OnPageC
     @Override
     public void onPageSelected(int position) {
         btnBackStep.setEnabled(position != 0);
-        if (position == fragmentList.size() - 1) {
-            btnNextStep.setText(getResources().getString(R.string.downloading));
-            btnNextStep.setTag(1);
-            btnNextStep.setEnabled(!imageDownloadFragment.isDownloading &&
-                    preDownloadConfigurationFragment.imageDownloadViewModel.getImageMutableLiveData().getValue() != null &&
-                    preDownloadConfigurationFragment.imageDownloadViewModel.getImageMutableLiveData().getValue().size() > 0);
-        } else {
-            btnNextStep.setText(getResources().getString(R.string.next));
-            btnNextStep.setTag(0);
-            btnNextStep.setEnabled(true);
-        }
+        btnNextStep.setEnabled(position != fragmentList.size() - 1);
         breadCrumbHeader.setPath(pagesTitles[position]);
-
-        if (position == 2) {
-            imageDownloadFragment.startObserving(preDownloadConfigurationFragment.imageDownloadViewModel.getImageMutableLiveData().getValue());
-            imageDownloadFragment.setupRecycleImagePreview();
-        }
     }
 
     @Override

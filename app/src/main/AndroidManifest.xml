@@ -19,6 +19,7 @@
         android:requestLegacyExternalStorage="true">
         <activity
             android:name=".view.activities.SplashActivity"
+            android:screenOrientation="fullSensor"
             android:theme="@style/AppTheme.Launcher">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -27,7 +28,7 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".view.activities.MainActivity"/>
+        <activity android:name=".view.activities.MainActivity" android:screenOrientation="fullSensor"/>
     </application>
 
 </manifest>

@@ -1,7 +1,5 @@
 package com.global_relay.globalrelayimagedownloaderproj.view.fragments;
 
-import android.app.Activity;
-import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -9,7 +7,6 @@ import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -24,7 +21,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.global_relay.globalrelayimagedownloaderproj.R;
 import com.global_relay.globalrelayimagedownloaderproj.model.to.ImageTO;
-import com.global_relay.globalrelayimagedownloaderproj.view_model.ImageDownloadViewModel;
+import com.global_relay.globalrelayimagedownloaderproj.view_model.ShareImageDownloadViewModel;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.obsez.android.lib.filechooser.ChooserDialog;
@@ -37,7 +34,8 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 
 public class PreDownloadConfigurationFragment extends Fragment implements Observer<List<ImageTO>> {
-    public ImageDownloadViewModel imageDownloadViewModel;
+    public ShareImageDownloadViewModel shareImageDownloadViewModel;
+    private MutableLiveData<String> webData;
     private MutableLiveData<List<ImageTO>> imageMutableLiveData = new MutableLiveData<>();
 
     private LinearLayoutManager linearLayoutManager;
@@ -83,19 +81,20 @@ public class PreDownloadConfigurationFragment extends Fragment implements Observ
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        imageDownloadViewModel= ViewModelProviders.of(this).get(ImageDownloadViewModel.class);
-        imageMutableLiveData = imageDownloadViewModel.getImageMutableLiveData();
+        shareImageDownloadViewModel = ViewModelProviders.of(getActivity()).get(ShareImageDownloadViewModel.class);
+        imageMutableLiveData = shareImageDownloadViewModel.getImageMutableLiveData();
+        imageMutableLiveData.observe(getViewLifecycleOwner(), this);
+        webData = shareImageDownloadViewModel.getWebData();
+        webData.observe(getViewLifecycleOwner(), new Observer<String>() {
+            @Override
+            public void onChanged(String webData) {
+                shareImageDownloadViewModel.startFetchingImages(webData);
+            }
+        });
         setupRecycleImagePreview();
 
-        txtSaveLocationVal.setText(imageDownloadViewModel.getDataLocalPath());
+        txtSaveLocationVal.setText(shareImageDownloadViewModel.getDataLocalPath());
     }
-
-    public void startObserving(String webData)
-    {
-        imageMutableLiveData.observe(this, this);
-        imageDownloadViewModel.startFetchingImages(webData);
-    }
-
 
     private void setupRecycleImagePreview() {
         linearLayoutManager = new LinearLayoutManager(getActivity(), LinearLayoutManager.VERTICAL, false);
@@ -115,13 +114,13 @@ public class PreDownloadConfigurationFragment extends Fragment implements Observ
             case R.id.btnChangeSaveLocation: {
                 new ChooserDialog(getActivity())
                         .withFilter(true, false)
-                        .withStartFile(imageDownloadViewModel.getDataLocalPath())
+                        .withStartFile(shareImageDownloadViewModel.getDataLocalPath())
                         .withChosenListener(new ChooserDialog.Result() {
                             @Override
                             public void onChoosePath(String path, File pathFile) {
                                 if (path != null && !path.isEmpty()) {
-                                    imageDownloadViewModel.updateDataLocalPath(path);
-                                    txtSaveLocationVal.setText(imageDownloadViewModel.getDataLocalPath());
+                                    shareImageDownloadViewModel.updateDataLocalPath(path);
+                                    txtSaveLocationVal.setText(shareImageDownloadViewModel.getDataLocalPath());
                                 }
                             }
                         })
@@ -180,7 +179,7 @@ public class PreDownloadConfigurationFragment extends Fragment implements Observ
                 ImageTO imageTO = getItem(position);
                 txtTitle.setText(imageTO.getTitle());
                 txtSubTitle.setText(imageTO.getDesc());
-                imageDownloadViewModel.loadImage(getActivity(), imageTO.getImagePath(), imgPreview);
+                shareImageDownloadViewModel.loadImage(getActivity(), imageTO.getImagePath(), imgPreview);
             }
         }
     }
