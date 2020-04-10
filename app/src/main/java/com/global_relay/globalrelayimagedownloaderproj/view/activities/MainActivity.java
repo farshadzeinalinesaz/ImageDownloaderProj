@@ -14,9 +14,7 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentStatePagerAdapter;
-import androidx.lifecycle.LiveData;
 import androidx.lifecycle.Observer;
-import androidx.lifecycle.ViewModelProviders;
 import androidx.viewpager.widget.ViewPager;
 
 import com.global_relay.globalrelayimagedownloaderproj.R;
@@ -25,10 +23,6 @@ import com.global_relay.globalrelayimagedownloaderproj.utils.Utils;
 import com.global_relay.globalrelayimagedownloaderproj.view.fragments.ImageDownloadFragment;
 import com.global_relay.globalrelayimagedownloaderproj.view.fragments.ImagePreviewFragment;
 import com.global_relay.globalrelayimagedownloaderproj.view.fragments.PreDownloadConfigurationFragment;
-import com.global_relay.globalrelayimagedownloaderproj.view.impl.IDownloadImageView;
-import com.global_relay.globalrelayimagedownloaderproj.view.impl.IPreDownloadConfigurationView;
-import com.global_relay.globalrelayimagedownloaderproj.view.impl.IPreviewImageView;
-import com.global_relay.globalrelayimagedownloaderproj.view_model.ImageDownloaderViewModel;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.worldline.breadcrumbview.BreadcrumbView;
@@ -40,11 +34,8 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
-public class MainActivity extends AppCompatActivity implements ViewPager.OnPageChangeListener, Observer<List<ImageTO>>, IPreviewImageView, IPreDownloadConfigurationView, IDownloadImageView
-{
+public class MainActivity extends AppCompatActivity implements ViewPager.OnPageChangeListener, Observer<List<ImageTO>> {
     private Utils utils;
-    private ImageDownloaderViewModel imageDownloaderViewModel;
-    private LiveData<List<ImageTO>> userListLiveData;
     private Snackbar snackBarNoInternet;
 
 
@@ -94,11 +85,6 @@ public class MainActivity extends AppCompatActivity implements ViewPager.OnPageC
         btnBackStep.setEnabled(false);
         pagesTitles = getResources().getStringArray(R.array.pagesTitles);
         setupViewPagerContent();
-        imageDownloaderViewModel = ViewModelProviders.of(this).get(ImageDownloaderViewModel.class);
-        userListLiveData = imageDownloaderViewModel.getImagesList();
-        userListLiveData.observe(this, this);
-
-
         if (!utils.isInternetAvailable()) {
             setupNoInternetSnackBar();
         }
@@ -116,12 +102,6 @@ public class MainActivity extends AppCompatActivity implements ViewPager.OnPageC
         unregisterReceiver(receiver);
     }
 
-    @Override
-    public ImageDownloaderViewModel getImageDownloaderViewModel() {
-        return imageDownloaderViewModel;
-    }
-
-    @Override
     public void imagePreviewStartObserving(String webData) {
         preDownloadConfigurationFragment.startObserving(webData);
     }
@@ -162,15 +142,11 @@ public class MainActivity extends AppCompatActivity implements ViewPager.OnPageC
     @OnClick({R.id.btnNextStep, R.id.btnBackStep})
     public void doClick(View view) {
         switch (view.getId()) {
-            case R.id.btnNextStep:
-            {
-                int tag=Integer.parseInt(view.getTag().toString());
-                if(tag==0)
-                {
+            case R.id.btnNextStep: {
+                int tag = Integer.parseInt(view.getTag().toString());
+                if (tag == 0) {
                     viewPagerContent.setCurrentItem(viewPagerContent.getCurrentItem() + 1);
-                }
-                else
-                {
+                } else {
                     imageDownloadFragment.startDownloading();
                 }
                 break;
@@ -193,19 +169,22 @@ public class MainActivity extends AppCompatActivity implements ViewPager.OnPageC
     @Override
     public void onPageSelected(int position) {
         btnBackStep.setEnabled(position != 0);
-        if(position == fragmentList.size() - 1)
-        {
+        if (position == fragmentList.size() - 1) {
             btnNextStep.setText(getResources().getString(R.string.downloading));
             btnNextStep.setTag(1);
-            btnNextStep.setEnabled(imageDownloaderViewModel.getImageMutableLiveData().getValue()!=null && imageDownloaderViewModel.getImageMutableLiveData().getValue().size()>0);
-        }
-        else
-        {
+            btnNextStep.setEnabled(preDownloadConfigurationFragment.imageDownloadViewModel.getImageMutableLiveData().getValue()!=null && preDownloadConfigurationFragment.imageDownloadViewModel.getImageMutableLiveData().getValue().size()>0);
+        } else {
             btnNextStep.setText(getResources().getString(R.string.next));
             btnNextStep.setTag(0);
             btnNextStep.setEnabled(true);
         }
         breadCrumbHeader.setPath(pagesTitles[position]);
+
+        if(position==2)
+        {
+            imageDownloadFragment.startObserving(preDownloadConfigurationFragment.imageDownloadViewModel.getImageMutableLiveData().getValue());
+            imageDownloadFragment.setupRecycleImagePreview();
+        }
     }
 
     @Override

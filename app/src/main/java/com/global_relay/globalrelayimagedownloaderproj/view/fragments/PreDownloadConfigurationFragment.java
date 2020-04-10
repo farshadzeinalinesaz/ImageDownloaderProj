@@ -1,7 +1,6 @@
 package com.global_relay.globalrelayimagedownloaderproj.view.fragments;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -16,6 +15,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.ListAdapter;
@@ -23,9 +23,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.global_relay.globalrelayimagedownloaderproj.R;
 import com.global_relay.globalrelayimagedownloaderproj.model.to.ImageTO;
-import com.global_relay.globalrelayimagedownloaderproj.view.activities.MainActivity;
-import com.global_relay.globalrelayimagedownloaderproj.view.impl.IPreDownloadConfigurationView;
-import com.global_relay.globalrelayimagedownloaderproj.view_model.ImageDownloaderViewModel;
+import com.global_relay.globalrelayimagedownloaderproj.view_model.ImageDownloadViewModel;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.nbsp.materialfilepicker.MaterialFilePicker;
@@ -38,11 +36,9 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 
 public class PreDownloadConfigurationFragment extends Fragment implements Observer<List<ImageTO>> {
-    private static final int FILE_CHOOSER_RQ=100;
+    private static final int FILE_CHOOSER_RQ = 100;
 
-    private IPreDownloadConfigurationView iPreDownloadConfigurationView;
-
-    public ImageDownloaderViewModel imageDownloaderViewModel;
+    public ImageDownloadViewModel imageDownloadViewModel;
     private MutableLiveData<List<ImageTO>> imageMutableLiveData = new MutableLiveData<>();
 
     private LinearLayoutManager linearLayoutManager;
@@ -78,31 +74,26 @@ public class PreDownloadConfigurationFragment extends Fragment implements Observ
         }
     };
 
-
-    @Override
-    public void onAttach(@NonNull Context context) {
-        super.onAttach(context);
-        try {
-            iPreDownloadConfigurationView= (IPreDownloadConfigurationView) getActivity();
-        }
-        catch (Exception ex){}
-    }
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_pre_download_configuration, container, false);
         ButterKnife.bind(this, rootView);
-        imageDownloaderViewModel = iPreDownloadConfigurationView.getImageDownloaderViewModel();
-        imageMutableLiveData = imageDownloaderViewModel.getImageMutableLiveData();
+        return rootView;
+    }
+
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        imageDownloadViewModel= ViewModelProviders.of(this).get(ImageDownloadViewModel.class);
+        imageMutableLiveData = imageDownloadViewModel.getImageMutableLiveData();
         setupRecycleImagePreview();
 
-        txtSaveLocationVal.setText(imageDownloaderViewModel.getDataLocalPath());
-        return rootView;
+        txtSaveLocationVal.setText(imageDownloadViewModel.getDataLocalPath());
     }
 
     public void startObserving(String webData) {
         imageMutableLiveData.observe(this, this);
-        imageDownloaderViewModel.startFetchingImages(webData);
+        imageDownloadViewModel.startFetchingImages(webData);
     }
 
 
@@ -147,8 +138,8 @@ public class PreDownloadConfigurationFragment extends Fragment implements Observ
         if (requestCode == FILE_CHOOSER_RQ && resultCode == Activity.RESULT_OK) {
             String filePath = data.getStringExtra(FilePickerActivity.RESULT_FILE_PATH);
             if (filePath != null && !filePath.isEmpty()) {
-                imageDownloaderViewModel.updateDataLocalPath(filePath);
-                txtSaveLocationVal.setText(imageDownloaderViewModel.getDataLocalPath());
+                imageDownloadViewModel.updateDataLocalPath(filePath);
+                txtSaveLocationVal.setText(imageDownloadViewModel.getDataLocalPath());
             }
         }
     }
@@ -172,10 +163,6 @@ public class PreDownloadConfigurationFragment extends Fragment implements Observ
             holder.setData(position);
         }
 
-        public ImageTO getImageAt(int position) {
-            return getItem(position);
-        }
-
         public class ViewHolder extends RecyclerView.ViewHolder {
 
             @BindView(R.id.chkDownloadable)
@@ -196,7 +183,7 @@ public class PreDownloadConfigurationFragment extends Fragment implements Observ
                 ImageTO imageTO = getItem(position);
                 txtTitle.setText(imageTO.getTitle());
                 txtSubTitle.setText(imageTO.getDesc());
-                imageDownloaderViewModel.loadImage(getActivity(), imageTO.getImagePath(), imgPreview);
+                imageDownloadViewModel.loadImage(getActivity(), imageTO.getImagePath(), imgPreview);
             }
         }
     }

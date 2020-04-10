@@ -1,6 +1,5 @@
 package com.global_relay.globalrelayimagedownloaderproj.view.fragments;
 
-import android.content.Context;
 import android.net.http.SslError;
 import android.os.Bundle;
 import android.util.Patterns;
@@ -14,13 +13,15 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
-import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProviders;
 
 import com.global_relay.globalrelayimagedownloaderproj.R;
-import com.global_relay.globalrelayimagedownloaderproj.view.impl.IPreviewImageView;
+import com.global_relay.globalrelayimagedownloaderproj.view.activities.MainActivity;
+import com.global_relay.globalrelayimagedownloaderproj.view_model.ImagePreviewViewModel;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 
@@ -29,8 +30,7 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 
 public class ImagePreviewFragment extends Fragment implements Observer<String> {
-
-    private IPreviewImageView iPreviewImageView;
+    private ImagePreviewViewModel imagePreviewViewModel;
     private MutableLiveData<String> webData;
 
     @BindView(R.id.btnUrlLoader)
@@ -49,24 +49,21 @@ public class ImagePreviewFragment extends Fragment implements Observer<String> {
     }
 
     @Override
-    public void onAttach(@NonNull Context context) {
-        super.onAttach(context);
-        try {
-            iPreviewImageView = (IPreviewImageView) getActivity();
-        } catch (Exception ex) {
-        }
-    }
-
-    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_image_preview, container, false);
         ButterKnife.bind(this, rootView);
         setupWebViewImagePreview();
         //todo remove this line later
         editImageUrl.setText("https://unsplash.com/s/photos/sample");
-        webData = iPreviewImageView.getImageDownloaderViewModel().getWebData();
-        webData.observe(this, this);
         return rootView;
+    }
+
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        imagePreviewViewModel = ViewModelProviders.of(this).get(ImagePreviewViewModel.class);
+        webData = imagePreviewViewModel.getWebData();
+        webData.observe(this, this);
     }
 
     private void setupWebViewImagePreview() {
@@ -95,15 +92,15 @@ public class ImagePreviewFragment extends Fragment implements Observer<String> {
                 editImageUrl.setError(getResources().getString(R.string.invalid_url));
                 return;
             }
-            iPreviewImageView.getImageDownloaderViewModel().startLoadingData(url);
+            imagePreviewViewModel.startLoadingData(url);
         }
     }
 
     @Override
     public void onChanged(String webData) {
         loadWebViewImagePreview(webData);
-        if (webData != null && !webData.isEmpty()) {
-            iPreviewImageView.imagePreviewStartObserving(webData);
+        if (getActivity() != null && webData != null && !webData.isEmpty()) {
+            imagePreviewViewModel.imagePreviewStartObserving((MainActivity) getActivity(), webData);
         }
     }
 
