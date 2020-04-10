@@ -38,6 +38,7 @@ public class ImageDownloadFragment extends Fragment implements Observer<ImageTO>
     private ImagePreviewRecycleAdapter imagePreviewRecycleAdapter;
     private String download_status;
     private String remaining_items;
+    public boolean isDownloading;
 
     @BindView(R.id.txtDownloadStatusTitle)
     public TextView txtDownloadStatusTitle;
@@ -88,6 +89,7 @@ public class ImageDownloadFragment extends Fragment implements Observer<ImageTO>
 
     public void startDownloading() {
         if (imageTOList != null && imageTOList.size() > 0) {
+            isDownloading=true;
             imageDownloadViewModel.startDownloadSaveImages(imageTOList.get(0));
         }
     }
@@ -105,10 +107,17 @@ public class ImageDownloadFragment extends Fragment implements Observer<ImageTO>
         imageTOList.remove(imageTO);
         txtDownloadStatusTitle.setText(String.format("%s /%s: %d", download_status, remaining_items, imageTOList.size()));
         txtDownloadStatusTitle.invalidate();
-        imagePreviewRecycleAdapter.submitList(imageTOList);
-        recycleImagePreview.getAdapter().notifyDataSetChanged();
+        if(imagePreviewRecycleAdapter!=null)
+        {
+            imagePreviewRecycleAdapter.submitList(imageTOList);
+            imagePreviewRecycleAdapter.notifyItemRemoved(0);
+        }
         if (imageTOList != null && imageTOList.size() > 0) {
             imageDownloadViewModel.startDownloadSaveImages(imageTOList.get(0));
+        }
+        else
+        {
+            isDownloading=false;
         }
     }
 
@@ -148,7 +157,7 @@ public class ImageDownloadFragment extends Fragment implements Observer<ImageTO>
                 ImageTO imageTO = getItem(position);
                 txtTitle.setText(imageTO.getTitle());
                 imageDownloadViewModel.loadImage(getActivity(), imageTO.getImagePath(), imgPreview);
-                progressBarDownload.setVisibility(imageTO.isDownloaded() ? View.INVISIBLE : View.VISIBLE);
+                progressBarDownload.setVisibility(isDownloading ? View.VISIBLE : View.INVISIBLE);
             }
         }
     }

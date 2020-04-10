@@ -70,7 +70,7 @@ dependencies {
     testImplementation 'androidx.test.ext:junit:1.1.0'
 
     implementation 'com.worldline:breadcrumbview:1.0.0'
-    implementation 'com.nbsp:library:1.8'
+    implementation 'com.github.hedzr:android-file-chooser:v1.2.0-final'
 
 
     //Lifecycle dependencies

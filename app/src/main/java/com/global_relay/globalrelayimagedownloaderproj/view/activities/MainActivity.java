@@ -119,6 +119,7 @@ public class MainActivity extends AppCompatActivity implements ViewPager.OnPageC
         viewPagerAdapter = new ViewPagerAdapter(getSupportFragmentManager(), FragmentStatePagerAdapter.BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT, fragmentList);
         viewPagerContent.setAdapter(viewPagerAdapter);
         viewPagerContent.setCurrentItem(0);
+        viewPagerContent.setOffscreenPageLimit(3);
         viewPagerContent.addOnPageChangeListener(this);
     }
 
@@ -147,6 +148,7 @@ public class MainActivity extends AppCompatActivity implements ViewPager.OnPageC
                 if (tag == 0) {
                     viewPagerContent.setCurrentItem(viewPagerContent.getCurrentItem() + 1);
                 } else {
+                    btnNextStep.setEnabled(false);
                     imageDownloadFragment.startDownloading();
                 }
                 break;
@@ -172,7 +174,9 @@ public class MainActivity extends AppCompatActivity implements ViewPager.OnPageC
         if (position == fragmentList.size() - 1) {
             btnNextStep.setText(getResources().getString(R.string.downloading));
             btnNextStep.setTag(1);
-            btnNextStep.setEnabled(preDownloadConfigurationFragment.imageDownloadViewModel.getImageMutableLiveData().getValue()!=null && preDownloadConfigurationFragment.imageDownloadViewModel.getImageMutableLiveData().getValue().size()>0);
+            btnNextStep.setEnabled(!imageDownloadFragment.isDownloading &&
+                    preDownloadConfigurationFragment.imageDownloadViewModel.getImageMutableLiveData().getValue() != null &&
+                    preDownloadConfigurationFragment.imageDownloadViewModel.getImageMutableLiveData().getValue().size() > 0);
         } else {
             btnNextStep.setText(getResources().getString(R.string.next));
             btnNextStep.setTag(0);
@@ -180,8 +184,7 @@ public class MainActivity extends AppCompatActivity implements ViewPager.OnPageC
         }
         breadCrumbHeader.setPath(pagesTitles[position]);
 
-        if(position==2)
-        {
+        if (position == 2) {
             imageDownloadFragment.startObserving(preDownloadConfigurationFragment.imageDownloadViewModel.getImageMutableLiveData().getValue());
             imageDownloadFragment.setupRecycleImagePreview();
         }

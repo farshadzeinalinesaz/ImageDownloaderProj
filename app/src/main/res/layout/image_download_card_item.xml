@@ -2,6 +2,7 @@
 <androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:elevation="5dp"
     android:outlineProvider="bounds"
     android:layout_margin="@dimen/margin_type1">
@@ -33,13 +34,15 @@
         <ProgressBar
             android:id="@+id/progressBarDownload"
             style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+            android:indeterminateDrawable="@drawable/progress_indeterminate_horizontal"
             android:layout_width="match_parent"
             android:layout_height="@dimen/progress_bar_height"
             android:layout_below="@id/txtTitle"
             android:layout_toRightOf="@id/imgPreview"
             android:indeterminate="true"
             android:progress="0"
-            android:layout_margin="@dimen/margin_type1"/>
+            android:layout_margin="@dimen/margin_type1"
+            android:visibility="invisible"/>
     </RelativeLayout>
 
 </androidx.cardview.widget.CardView>
