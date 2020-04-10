@@ -19,14 +19,13 @@
     <string name="check">Check</string>
 
     <string name="permission_title">
-        What\'s going in the forward
+       WHAT\'S GOING IN THE NEXT STEP
     </string>
 
     <string name="permission_msg">
-        The application needs some permission to work properly and smoothly,\n
-        So, in the next step, the app will ask you some permission request for:\n
-        Internet\n
-        External Storage Access\n
+        THE APPLICATION NEEDS SOME PERMISSION TO WORK PROPERLY AND SMOOTHLY.\nSO, IN THE NEXT STEP, THE APP WILL ASK YOU FOR SOME PERMISSION REQUESTS FOR:\n\n
+        \tINTERNET\n
+        \tEXTERNAL STORAGE ACCESS\n
     </string>
     <string name="download_status">Download Status</string>
     <string name="remaining_items">Remaining Items</string>

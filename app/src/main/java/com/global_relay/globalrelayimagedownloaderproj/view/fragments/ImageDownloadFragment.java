@@ -77,6 +77,7 @@ public class ImageDownloadFragment extends Fragment implements Observer<ImageTO>
         download_status = getResources().getString(R.string.download_status);
         remaining_items = getResources().getString(R.string.remaining_items);
         setupRecycleImagePreview();
+        btnDownload.setEnabled(imageTOList!=null && imageTOList.size()>0);
         return rootView;
     }
 
@@ -93,6 +94,7 @@ public class ImageDownloadFragment extends Fragment implements Observer<ImageTO>
                 imageTOList=imageTOS;
                 imagePreviewRecycleAdapter.submitList(imageTOS);
                 recycleImagePreview.setAdapter(imagePreviewRecycleAdapter);
+                btnDownload.setEnabled(!isDownloading && imageTOList!=null && imageTOList.size()>0);
             }
         });
     }
@@ -130,6 +132,8 @@ public class ImageDownloadFragment extends Fragment implements Observer<ImageTO>
             imagePreviewRecycleAdapter.notifyItemRemoved(0);
         }
         if (imageTOList != null && imageTOList.size() > 0) {
+            isDownloading=true;
+            btnDownload.setEnabled(false);
             shareImageDownloadViewModel.startDownloadSaveImages(imageTOList.get(0));
         }
         else
