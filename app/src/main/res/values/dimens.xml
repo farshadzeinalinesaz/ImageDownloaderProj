@@ -4,5 +4,5 @@
     <dimen name="margin_type2">16dp</dimen>
 
     <dimen name="image_preview_size">80dp</dimen>
-    <dimen name="progress_bar_height">5dp</dimen>
+    <dimen name="progress_bar_height">3dp</dimen>
 </resources>

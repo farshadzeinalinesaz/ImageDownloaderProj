@@ -12,6 +12,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.Observer;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.ListAdapter;
@@ -28,13 +29,18 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-public class ImageDownloadFragment extends Fragment {
+public class ImageDownloadFragment extends Fragment implements Observer<ImageTO> {
     public ImageDownloaderViewModel imageDownloaderViewModel;
+    private MutableLiveData<ImageTO> imageTOMutableLiveData=new MutableLiveData<>();
     private List<ImageTO> imageTOList = new ArrayList<>();
 
     private LinearLayoutManager linearLayoutManager;
     private ImagePreviewRecycleAdapter imagePreviewRecycleAdapter;
+    private String download_status;
+    private String remaining_items;
 
+    @BindView(R.id.txtDownloadStatusTitle)
+    public TextView txtDownloadStatusTitle;
     @BindView(R.id.recycleImagePreview)
     public RecyclerView recycleImagePreview;
 
@@ -62,6 +68,8 @@ public class ImageDownloadFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_image_download, container, false);
         ButterKnife.bind(this, rootView);
+        download_status=getResources().getString(R.string.download_status);
+        remaining_items=getResources().getString(R.string.remaining_items);
         startObserving();
         setupRecycleImagePreview();
         return rootView;
@@ -70,15 +78,16 @@ public class ImageDownloadFragment extends Fragment {
     public void startObserving()
     {
         imageDownloaderViewModel = ((MainActivity) getActivity()).getImageDownloaderViewModel();
+        imageTOMutableLiveData=imageDownloaderViewModel.getImageTOMutableLiveData();
+        imageTOMutableLiveData.observe(this,this);
         imageTOList = imageDownloaderViewModel.getImageMutableLiveData().getValue();
-        if(imageTOList!=null)
+    }
+
+    public void startDownloading()
+    {
+        if(imageTOList!=null && imageTOList.size()>0)
         {
-            new Handler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    imageDownloaderViewModel.startDownloadSaveImages(imageTOList.get(0).getImagePath());
-                }
-            },3000);
+            imageDownloaderViewModel.startDownloadSaveImages(imageTOList.get(0));
         }
     }
 
@@ -89,6 +98,19 @@ public class ImageDownloadFragment extends Fragment {
         recycleImagePreview.setLayoutManager(linearLayoutManager);
         imagePreviewRecycleAdapter.submitList(imageTOList);
         recycleImagePreview.setAdapter(imagePreviewRecycleAdapter);
+    }
+
+    @Override
+    public void onChanged(ImageTO imageTO) {
+        imageTOList.remove(imageTO);
+        txtDownloadStatusTitle.setText(String.format("%s /%s: %d",download_status,remaining_items,imageTOList.size()));
+        txtDownloadStatusTitle.invalidate();
+        imagePreviewRecycleAdapter.submitList(imageTOList);
+        recycleImagePreview.getAdapter().notifyDataSetChanged();
+        if(imageTOList!=null && imageTOList.size()>0)
+        {
+            imageDownloaderViewModel.startDownloadSaveImages(imageTOList.get(0));
+        }
     }
 
 
@@ -130,6 +152,7 @@ public class ImageDownloadFragment extends Fragment {
                 ImageTO imageTO = getItem(position);
                 txtTitle.setText(imageTO.getTitle());
                 imageDownloaderViewModel.loadImage(getActivity(), imageTO.getImagePath(), imgPreview);
+                progressBarDownload.setVisibility(imageTO.isDownloaded()?View.INVISIBLE:View.VISIBLE);
             }
         }
     }

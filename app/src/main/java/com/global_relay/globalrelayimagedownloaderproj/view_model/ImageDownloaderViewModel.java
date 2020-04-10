@@ -19,6 +19,7 @@ import com.global_relay.globalrelayimagedownloaderproj.model.to.ImageTO;
 import com.global_relay.globalrelayimagedownloaderproj.utils.Utils;
 
 import java.io.IOException;
+import java.util.Date;
 import java.util.List;
 
 import okhttp3.ResponseBody;
@@ -30,6 +31,7 @@ public class ImageDownloaderViewModel extends AndroidViewModel
 {
     private MutableLiveData<List<ImageTO>> imagesList=new MutableLiveData<>();
     private MutableLiveData<String> webData=new MutableLiveData<>();
+    private MutableLiveData<ImageTO> imageTOMutableLiveData=new MutableLiveData<>();
 
     private WebCrawler webCrawler;
     private DownloaderApi downloaderApi;
@@ -53,6 +55,10 @@ public class ImageDownloaderViewModel extends AndroidViewModel
         return webCrawler.getImageMutableLiveData();
     }
 
+    public MutableLiveData<ImageTO> getImageTOMutableLiveData() {
+        return imageTOMutableLiveData;
+    }
+
     public boolean updateDataLocalPath(String localPath)
     {
         SettingSP settingSP=new SettingSP(getApplication().getApplicationContext());
@@ -70,29 +76,39 @@ public class ImageDownloaderViewModel extends AndroidViewModel
         return localPath;
     }
 
-    public void startDownloadSaveImages(String url)
+    public void startDownloadSaveImages(ImageTO imageTO)
     {
-        downloaderApi.download(url, new Callback<ResponseBody>() {
+        if(imageTO.isDownloaded())
+        {
+            imageTOMutableLiveData.setValue(imageTO);
+            return;
+        }
+        imageTO.setDownloaded(false);
+        downloaderApi.download(imageTO.getImagePath(), new Callback<ResponseBody>() {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                 if(response.code()!=200)
                 {
-
+                    imageTOMutableLiveData.setValue(imageTO);
                     return;
                 }
                 try
                 {
-                    utils.writeToFile(getDataLocalPath(),response.body().bytes());
+                    if(utils.writeToFile(getDataLocalPath(),String.valueOf(new Date().getTime()),response.body().bytes()))
+                    {
+                        imageTO.setDownloaded(true);
+                        imageTOMutableLiveData.setValue(imageTO);
+                    }
                 }
                 catch (IOException ex)
                 {
-
+                    imageTOMutableLiveData.setValue(imageTO);
                 }
-
             }
 
             @Override
             public void onFailure(Call<ResponseBody> call, Throwable t) {
+                imageTOMutableLiveData.setValue(imageTO);
             }
         });
     }

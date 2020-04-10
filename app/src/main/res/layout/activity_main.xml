@@ -59,7 +59,8 @@
             android:layout_weight="1"
             android:text="@string/next"
             android:layout_margin="@dimen/margin_type1"
-            android:textAllCaps="true"/>
+            android:textAllCaps="true"
+            android:tag="0"/>
     </LinearLayout>
 
     <androidx.viewpager.widget.ViewPager

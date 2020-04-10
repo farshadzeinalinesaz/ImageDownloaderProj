@@ -43,19 +43,21 @@ public class Utils {
 
     public String getCameraGalleryPath()
     {
-        return Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).getAbsolutePath();
+        return Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM).getAbsolutePath();
     }
 
 
 
-    public boolean writeToFile(String path, byte[] data) {
+    public boolean writeToFile(String path,String fileName, byte[] data) {
         try {
-            File file = new File(path);
+            File file = new File(path,fileName);
             if (!file.getParentFile().exists()) {
                 file.mkdirs();
             }
             FileOutputStream outputStream = new FileOutputStream(file);
             outputStream.write(data, 0, data.length);
+            outputStream.flush();
+            outputStream.close();
             return true;
         } catch (Exception ex) {
             return false;

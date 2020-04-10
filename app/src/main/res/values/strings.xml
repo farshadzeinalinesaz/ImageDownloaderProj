@@ -4,6 +4,7 @@
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="back">Back</string>
     <string name="next">Next</string>
+    <string name="downloading">Downloading</string>
     <string name="enter_image_web_url">Please enter the image url</string>
     <string name="validate">Validate</string>
     <string name="change">Change</string>
@@ -28,5 +29,6 @@
         External Storage Access\n
     </string>
     <string name="download_status">Download Status</string>
+    <string name="remaining_items">Remaining Items</string>
     <string name="load">Load</string>
 </resources>

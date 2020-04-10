@@ -37,7 +37,8 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
-public class MainActivity extends AppCompatActivity implements ViewPager.OnPageChangeListener, Observer<List<ImageTO>> {
+public class MainActivity extends AppCompatActivity implements ViewPager.OnPageChangeListener, Observer<List<ImageTO>>
+{
     private Utils utils;
     private ImageDownloaderViewModel imageDownloaderViewModel;
     private LiveData<List<ImageTO>> userListLiveData;
@@ -152,8 +153,17 @@ public class MainActivity extends AppCompatActivity implements ViewPager.OnPageC
     @OnClick({R.id.btnNextStep, R.id.btnBackStep})
     public void doClick(View view) {
         switch (view.getId()) {
-            case R.id.btnNextStep: {
-                viewPagerContent.setCurrentItem(viewPagerContent.getCurrentItem() + 1);
+            case R.id.btnNextStep:
+            {
+                int tag=Integer.parseInt(view.getTag().toString());
+                if(tag==0)
+                {
+                    viewPagerContent.setCurrentItem(viewPagerContent.getCurrentItem() + 1);
+                }
+                else
+                {
+                    imageDownloadFragment.startDownloading();
+                }
                 break;
             }
             case R.id.btnBackStep: {
@@ -174,7 +184,18 @@ public class MainActivity extends AppCompatActivity implements ViewPager.OnPageC
     @Override
     public void onPageSelected(int position) {
         btnBackStep.setEnabled(position != 0);
-        btnNextStep.setEnabled(position != fragmentList.size() - 1);
+        if(position == fragmentList.size() - 1)
+        {
+            btnNextStep.setText(getResources().getString(R.string.downloading));
+            btnNextStep.setTag(1);
+            btnNextStep.setEnabled(imageDownloaderViewModel.getImageMutableLiveData().getValue()!=null && imageDownloaderViewModel.getImageMutableLiveData().getValue().size()>0);
+        }
+        else
+        {
+            btnNextStep.setText(getResources().getString(R.string.next));
+            btnNextStep.setTag(0);
+            btnNextStep.setEnabled(true);
+        }
         breadCrumbHeader.setPath(pagesTitles[position]);
     }
 
