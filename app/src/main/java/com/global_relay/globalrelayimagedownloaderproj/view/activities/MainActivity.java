@@ -1,24 +1,34 @@
 package com.global_relay.globalrelayimagedownloaderproj.view.activities;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.net.wifi.p2p.WifiP2pManager;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentStatePagerAdapter;
 import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.viewpager.widget.ViewPager;
 
 import com.global_relay.globalrelayimagedownloaderproj.R;
 import com.global_relay.globalrelayimagedownloaderproj.model.to.ImageTO;
+import com.global_relay.globalrelayimagedownloaderproj.utils.Utils;
 import com.global_relay.globalrelayimagedownloaderproj.view.fragments.ImageDownloadFragment;
 import com.global_relay.globalrelayimagedownloaderproj.view.fragments.ImagePreviewFragment;
 import com.global_relay.globalrelayimagedownloaderproj.view.fragments.PreDownloadConfigurationFragment;
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.snackbar.Snackbar;
 import com.worldline.breadcrumbview.BreadcrumbView;
 import com.global_relay.globalrelayimagedownloaderproj.view_model.ImageDownloaderViewModel;
 
@@ -31,8 +41,10 @@ import butterknife.OnClick;
 
 public class MainActivity extends AppCompatActivity implements ViewPager.OnPageChangeListener, Observer<List<ImageTO>>
 {
+    private Utils utils;
     private ImageDownloaderViewModel imageDownloaderViewModel;
     private LiveData<List<ImageTO>> userListLiveData;
+    private Snackbar snackBarNoInternet;
 
 
     private String[] pagesTitles;
@@ -44,7 +56,8 @@ public class MainActivity extends AppCompatActivity implements ViewPager.OnPageC
 
     private ViewPagerAdapter viewPagerAdapter;
 
-
+    @BindView(R.id.rootConstraintLayout)
+    public ConstraintLayout rootConstraintLayout;
     @BindView(R.id.viewPagerContent)
     public ViewPager viewPagerContent;
     @BindView(R.id.breadCrumbHeader)
@@ -54,11 +67,27 @@ public class MainActivity extends AppCompatActivity implements ViewPager.OnPageC
     @BindView(R.id.btnNextStep)
     public MaterialButton btnNextStep;
 
+    private BroadcastReceiver receiver=new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            if (WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION.equals(action)) {
+                int state = intent.getIntExtra(WifiP2pManager.EXTRA_WIFI_STATE, -1);
+                if (state == WifiP2pManager.WIFI_P2P_STATE_ENABLED) {
+                    utils.cancelSnackBar(snackBarNoInternet);
+                } else {
+                    setupNoInternetSnackBar();
+                }
+            }
+        }
+    };
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
+        utils=Utils.getInstance(this);
         setTitle(getResources().getString(R.string.app_name_title));
         initFragmentsList();
         btnBackStep.setEnabled(false);
@@ -67,6 +96,24 @@ public class MainActivity extends AppCompatActivity implements ViewPager.OnPageC
         imageDownloaderViewModel = ViewModelProviders.of(this).get(ImageDownloaderViewModel.class);
         userListLiveData = imageDownloaderViewModel.getImagesList();
         userListLiveData.observe(this, this);
+
+
+        if(!utils.isInternetAvailable())
+        {
+            setupNoInternetSnackBar();
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        registerReceiver(receiver, getReceiverIntentFilter());
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        unregisterReceiver(receiver);
     }
 
     public ImageDownloaderViewModel getImageDownloaderViewModel() {
@@ -87,6 +134,24 @@ public class MainActivity extends AppCompatActivity implements ViewPager.OnPageC
         viewPagerContent.setAdapter(viewPagerAdapter);
         viewPagerContent.setCurrentItem(0);
         viewPagerContent.addOnPageChangeListener(this);
+    }
+
+    private void setupNoInternetSnackBar()
+    {
+        snackBarNoInternet=utils.showSnackBar(rootConstraintLayout, getResources().getString(R.string.internet_disconnected), Snackbar.LENGTH_INDEFINITE, getResources().getString(R.string.check), new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                utils.openDeviceConnectionSetting();
+            }
+        });
+    }
+
+    private IntentFilter getReceiverIntentFilter()
+    {
+        IntentFilter intentFilter=new IntentFilter();
+        // Indicates a change in the Wi-Fi P2P status.
+        intentFilter.addAction(WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION);
+        return intentFilter;
     }
 
 
