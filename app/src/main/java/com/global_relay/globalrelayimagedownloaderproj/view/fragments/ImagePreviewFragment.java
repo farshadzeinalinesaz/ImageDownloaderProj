@@ -30,8 +30,8 @@ public class ImagePreviewFragment extends Fragment implements Observer<String> {
 
     private MutableLiveData<String> webData;
 
-    @BindView(R.id.btnUrlValidator)
-    public MaterialButton btnUrlValidator;
+    @BindView(R.id.btnUrlLoader)
+    public MaterialButton btnUrlLoader;
     @BindView(R.id.editImageUrl)
     public TextInputEditText editImageUrl;
     @BindView(R.id.webViewImagePreview)
@@ -51,7 +51,7 @@ public class ImagePreviewFragment extends Fragment implements Observer<String> {
         ButterKnife.bind(this, rootView);
         setupWebViewImagePreview();
         //todo remove this line later
-        editImageUrl.setText("https://imagesfestival.com/news/welcome-education-assistant-tara-hakim");
+        editImageUrl.setText("https://unsplash.com/s/photos/sample");
         webData=((MainActivity)getActivity()).getImageDownloaderViewModel().getWebData();
         webData.observe(this,this);
         return rootView;
@@ -76,9 +76,9 @@ public class ImagePreviewFragment extends Fragment implements Observer<String> {
     }
 
 
-    @OnClick({R.id.btnUrlValidator})
+    @OnClick({R.id.btnUrlLoader})
     public void doClick(View view) {
-        if (view.getId() == R.id.btnUrlValidator) {
+        if (view.getId() == R.id.btnUrlLoader) {
             String url = editImageUrl.getText().toString();
             if (!Patterns.WEB_URL.matcher(url).matches()) {
                 editImageUrl.setError(getResources().getString(R.string.invalid_url));
@@ -92,10 +92,14 @@ public class ImagePreviewFragment extends Fragment implements Observer<String> {
     public void onChanged(String webData)
     {
         loadWebViewImagePreview(webData);
+        if(webData!=null && !webData.isEmpty())
+        {
+            ((MainActivity)getActivity()).startObservingFragment2(webData);
+        }
     }
 
 
-    private class AppWebViewClient extends WebViewClient
+    private static class AppWebViewClient extends WebViewClient
     {
         @Override
         public void onReceivedSslError(WebView view, SslErrorHandler handler, SslError error) {
@@ -106,7 +110,6 @@ public class ImagePreviewFragment extends Fragment implements Observer<String> {
         @Override
         public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
             super.onReceivedError(view, request, error);
-            System.out.println(error.getErrorCode()+"\t"+error.getDescription());
         }
     }
 }

@@ -2,6 +2,7 @@ package com.global_relay.globalrelayimagedownloaderproj.view_model;
 
 import android.app.Application;
 import android.content.Context;
+import android.os.Environment;
 import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
@@ -14,6 +15,7 @@ import com.global_relay.globalrelayimagedownloaderproj.R;
 import com.global_relay.globalrelayimagedownloaderproj.model.WebCrawler;
 import com.global_relay.globalrelayimagedownloaderproj.model.repo.DownloaderApi;
 import com.global_relay.globalrelayimagedownloaderproj.model.to.ImageTO;
+import com.global_relay.globalrelayimagedownloaderproj.utils.Utils;
 
 import java.io.IOException;
 import java.util.List;
@@ -30,11 +32,13 @@ public class ImageDownloaderViewModel extends AndroidViewModel
 
     private WebCrawler webCrawler;
     private DownloaderApi downloaderApi;
+    private Utils utils;
     public ImageDownloaderViewModel(@NonNull Application application) {
         super(application);
         //todo update this part later
         downloaderApi=new DownloaderApi("http://www.google.com");
         webCrawler=new WebCrawler();
+        utils=Utils.getInstance(application.getApplicationContext());
     }
 
     public LiveData<List<ImageTO>> getImagesList() {
@@ -47,6 +51,33 @@ public class ImageDownloaderViewModel extends AndroidViewModel
 
     public MutableLiveData<List<ImageTO>> getImageMutableLiveData() {
         return webCrawler.getImageMutableLiveData();
+    }
+
+    public void startDownloadSaveImages(String url)
+    {
+        downloaderApi.download(url, new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                if(response.code()!=200)
+                {
+
+                    return;
+                }
+                try
+                {
+                    utils.writeToFile(Environment.getExternalStorageDirectory().getAbsolutePath(),response.body().bytes());
+                }
+                catch (IOException ex)
+                {
+
+                }
+
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+            }
+        });
     }
 
     public void startLoadingData(String url)
@@ -79,23 +110,16 @@ public class ImageDownloaderViewModel extends AndroidViewModel
 
     public void startFetchingImages(String data)
     {
-        webCrawler.startFetchingImages();
+        webCrawler.startParseDocument(data);
     }
 
-    public void loadImage(Context ctx, String url, ImageView view) {
-        Glide
-                .with(ctx)
+    public void loadImage(Context ctx, String url, ImageView view)
+    {
+        Glide.with(ctx)
                 .load(url)
-                //.skipMemoryCache(true)
-                //.diskCacheStrategy(DiskCacheStrategy.NONE)
                 .placeholder(R.drawable.ic_panorama)
                 .error(R.drawable.ic_broken_image)
                 .fallback(R.drawable.ic_broken_image)
                 .into(view);
-    }
-
-    public void stopDownloading()
-    {
-
     }
 }

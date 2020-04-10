@@ -48,8 +48,6 @@ public class PreDownloadConfigurationFragment extends Fragment implements Observ
     public SwitchMaterial switchDefaultLocation;
     @BindView(R.id.txtSaveLocationVal)
     public TextView txtSaveLocationVal;
-    @BindView(R.id.switchShowNotification)
-    public SwitchMaterial switchShowNotification;
     @BindView(R.id.recycleImagePreview)
     public RecyclerView recycleImagePreview;
 
@@ -79,10 +77,14 @@ public class PreDownloadConfigurationFragment extends Fragment implements Observ
         ButterKnife.bind(this, rootView);
         imageDownloaderViewModel = ((MainActivity) getActivity()).getImageDownloaderViewModel();
         imageMutableLiveData = imageDownloaderViewModel.getImageMutableLiveData();
-        imageMutableLiveData.observe(this, this);
-        imageDownloaderViewModel.startFetchingImages("");
         setupRecycleImagePreview();
         return rootView;
+    }
+
+    public void startObserving(String webData)
+    {
+        imageMutableLiveData.observe(this, this);
+        imageDownloaderViewModel.startFetchingImages(webData);
     }
 
 
@@ -94,15 +96,11 @@ public class PreDownloadConfigurationFragment extends Fragment implements Observ
         recycleImagePreview.setAdapter(imagePreviewRecycleAdapter);
     }
 
-    @OnClick({R.id.switchDefaultLocation, R.id.switchShowNotification, R.id.btnChangeSaveLocation})
+    @OnClick({R.id.switchDefaultLocation, R.id.btnChangeSaveLocation})
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.switchDefaultLocation: {
                 btnChangeSaveLocation.setEnabled(!switchDefaultLocation.isChecked());
-                break;
-            }
-            case R.id.switchShowNotification: {
-
                 break;
             }
             case R.id.btnChangeSaveLocation: {

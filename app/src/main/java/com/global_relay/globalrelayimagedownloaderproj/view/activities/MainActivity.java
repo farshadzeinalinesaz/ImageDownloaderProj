@@ -129,6 +129,11 @@ public class MainActivity extends AppCompatActivity implements ViewPager.OnPageC
 
     }
 
+    // TODO: 09/04/20 Update this code and replace with interface later
+    public void startObservingFragment2(String webData)
+    {
+        preDownloadConfigurationFragment.startObserving(webData);
+    }
 
     private class ViewPagerAdapter extends FragmentStatePagerAdapter {
         private List<Fragment> fragmentList;

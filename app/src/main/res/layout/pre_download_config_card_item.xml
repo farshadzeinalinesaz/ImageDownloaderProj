@@ -18,6 +18,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:checked="true"
+            android:enabled="false"
             app:useMaterialThemeColors="false"
             android:layout_margin="@dimen/margin_type1"
             android:layout_centerVertical="true"

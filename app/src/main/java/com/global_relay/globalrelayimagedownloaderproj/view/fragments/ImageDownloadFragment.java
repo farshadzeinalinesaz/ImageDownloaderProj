@@ -1,6 +1,7 @@
 package com.global_relay.globalrelayimagedownloaderproj.view.fragments;
 
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,6 +11,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.MutableLiveData;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.ListAdapter;
@@ -17,6 +19,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.global_relay.globalrelayimagedownloaderproj.R;
 import com.global_relay.globalrelayimagedownloaderproj.model.to.ImageTO;
+import com.global_relay.globalrelayimagedownloaderproj.view.activities.MainActivity;
+import com.global_relay.globalrelayimagedownloaderproj.view_model.ImageDownloaderViewModel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,7 +29,8 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 
 public class ImageDownloadFragment extends Fragment {
-
+    public ImageDownloaderViewModel imageDownloaderViewModel;
+    private List<ImageTO> imageTOList = new ArrayList<>();
 
     private LinearLayoutManager linearLayoutManager;
     private ImagePreviewRecycleAdapter imagePreviewRecycleAdapter;
@@ -41,48 +46,51 @@ public class ImageDownloadFragment extends Fragment {
         return fragment;
     }
 
+    private DiffUtil.ItemCallback<ImageTO> diffCallback = new DiffUtil.ItemCallback<ImageTO>() {
+        @Override
+        public boolean areItemsTheSame(@NonNull ImageTO oldItem, @NonNull ImageTO newItem) {
+            return oldItem.getId() == newItem.getId();
+        }
+
+        @Override
+        public boolean areContentsTheSame(@NonNull ImageTO oldItem, @NonNull ImageTO newItem) {
+            return oldItem.getTitle().equals(newItem.getTitle()) && oldItem.getDesc().equals(newItem.getDesc());
+        }
+    };
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_image_download, container, false);
         ButterKnife.bind(this, rootView);
+        startObserving();
         setupRecycleImagePreview();
         return rootView;
     }
 
+    public void startObserving()
+    {
+        imageDownloaderViewModel = ((MainActivity) getActivity()).getImageDownloaderViewModel();
+        imageTOList = imageDownloaderViewModel.getImageMutableLiveData().getValue();
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                imageDownloaderViewModel.startDownloadSaveImages(imageTOList.get(0).getImagePath());
+            }
+        },3000);
+    }
 
     private void setupRecycleImagePreview()
     {
         linearLayoutManager=new LinearLayoutManager(getActivity(),LinearLayoutManager.VERTICAL,false);
-        imagePreviewRecycleAdapter=new ImagePreviewRecycleAdapter();
+        imagePreviewRecycleAdapter=new ImagePreviewRecycleAdapter(diffCallback);
         recycleImagePreview.setLayoutManager(linearLayoutManager);
-        imagePreviewRecycleAdapter.submitList(fakeImageTOList());
+        imagePreviewRecycleAdapter.submitList(imageTOList);
         recycleImagePreview.setAdapter(imagePreviewRecycleAdapter);
     }
 
-    private List<ImageTO> fakeImageTOList()
-    {
-        List<ImageTO> imageTOList=new ArrayList<>();
-        imageTOList.add(new ImageTO(1,"Title 1","Desc 1",null));
-        imageTOList.add(new ImageTO(1,"Title 2","Desc 2",null));
-        imageTOList.add(new ImageTO(1,"Title 3","Desc 3",null));
-        return imageTOList;
-    }
 
-
-    public static class ImagePreviewRecycleAdapter extends ListAdapter<ImageTO, ImagePreviewRecycleAdapter.ViewHolder> {
-        private static DiffUtil.ItemCallback<ImageTO> diffCallback = new DiffUtil.ItemCallback<ImageTO>() {
-            @Override
-            public boolean areItemsTheSame(@NonNull ImageTO oldItem, @NonNull ImageTO newItem) {
-                return oldItem.getId() == newItem.getId();
-            }
-
-            @Override
-            public boolean areContentsTheSame(@NonNull ImageTO oldItem, @NonNull ImageTO newItem) {
-                return oldItem.getTitle().equals(newItem.getTitle()) && oldItem.getDesc().equals(newItem.getDesc());
-            }
-        };
-
-        public ImagePreviewRecycleAdapter() {
+    public class ImagePreviewRecycleAdapter extends ListAdapter<ImageTO, ImagePreviewRecycleAdapter.ViewHolder> {
+        public ImagePreviewRecycleAdapter(DiffUtil.ItemCallback<ImageTO> diffCallback) {
             super(diffCallback);
         }
 
@@ -118,6 +126,7 @@ public class ImageDownloadFragment extends Fragment {
             private void setData(int position) {
                 ImageTO imageTO = getItem(position);
                 txtTitle.setText(imageTO.getTitle());
+                imageDownloaderViewModel.loadImage(getActivity(), imageTO.getImagePath(), imgPreview);
             }
         }
     }

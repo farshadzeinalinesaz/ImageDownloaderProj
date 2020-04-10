@@ -25,4 +25,5 @@
         External Storage Access\n
     </string>
     <string name="download_status">Download Status</string>
+    <string name="load">Load</string>
 </resources>
